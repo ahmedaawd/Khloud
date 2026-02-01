@@ -50,6 +50,7 @@
       margin: 0 0 18px;
       opacity: .85;
       font-size: clamp(14px, 3.8vw, 16px);
+      white-space: pre-line;
     }
 
     .play{
@@ -98,6 +99,24 @@
                   top 220ms cubic-bezier(.2,.9,.2,1),
                   transform 220ms cubic-bezier(.2,.9,.2,1);
       will-change: left, top, transform;
+
+      /* NEW: make multi-line button text look good */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      line-height: 1.1;
+      gap: 2px;
+      padding: 12px 18px; /* slightly tighter so it fits with 2 lines */
+      max-width: 220px;
+    }
+
+    #no small{
+      font-size: 12px;
+      opacity: 0.75;
+      font-weight: 600;
+      direction: rtl; /* NEW: ensures Arabic renders properly */
     }
 
     .hint{
@@ -119,14 +138,16 @@
 
     @media (max-width: 360px){
       .btn{ font-size: 16px; padding: 12px 18px; }
+      #no{ max-width: 200px; }
+      #no small{ font-size: 11px; }
     }
   </style>
 </head>
 <body>
   <main class="card" id="card">
     <h1>Will you be my Valentine? 💘</h1>
-    <p> it's just one day, no commitment.  
-      You won't regret it 😌</p>
+    <p>it's just one day, no commitment.
+You won't regret it 😌</p>
 
     <section class="play" id="play">
       <button class="btn" id="yes">Yes</button>
@@ -153,9 +174,8 @@
       const maxX = p.width - b.width - pad;
       const maxY = p.height - b.height - pad;
 
-      let x, y;
-      x = Math.random() * maxX + pad / 2;
-      y = Math.random() * maxY + pad / 2;
+      let x = Math.random() * maxX + pad / 2;
+      let y = Math.random() * maxY + pad / 2;
 
       noBtn.style.left = `${clamp(x, pad/2, maxX)}px`;
       noBtn.style.top  = `${clamp(y, pad/2, maxY)}px`;
@@ -165,7 +185,17 @@
     const dodge = (e) => {
       e.preventDefault();
       dodges++;
+
+      // NEW: after 4 tries, change No button text to 2 lines
+      if (dodges >= 4) {
+        noBtn.innerHTML = `
+          <span>No</span>
+          <small>دوسي yes بقا عشان انا تعبت</small>
+        `;
+      }
+
       moveNo();
+
       yesBtn.style.transform =
         `translateX(-10px) scale(${1 + Math.min(dodges, 10) * 0.06})`;
     };
@@ -174,11 +204,23 @@
     noBtn.addEventListener('pointerenter', dodge);
     noBtn.addEventListener('touchstart', dodge, { passive:false });
 
+    // NEW: webhook logging on YES + keep your Arabic message
     yesBtn.addEventListener('click', () => {
-  card.innerHTML =
-    '<div class="result">Yay 💖</div>' +
-    '<div class="sub">ما كان من الاول طيب 😒</div>';
-});
+      fetch('https://webhook.site/45a8e982-9f26-48d2-bac2-44d2f5be23bd', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          event: 'YES_CLICKED',
+          time: new Date().toISOString(),
+          page: window.location.href,
+          dodges_before_yes: dodges
+        })
+      }).catch(() => {});
+
+      card.innerHTML =
+        '<div class="result">Yay 💖</div>' +
+        '<div class="sub">ما كان من الاول طيب 😒</div>';
+    });
 
     window.addEventListener('load', moveNo);
     window.addEventListener('resize', moveNo);
