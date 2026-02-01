@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Valentine?</title>
+  <style>
+    :root{
+      --bg1:#ffe6ef;
+      --bg2:#fff6fb;
+      --card:#ffffffcc;
+      --text:#1f1f1f;
+      --yes:#ff3b7a;
+      --yes2:#ff6aa0;
+      --no:#2b2b2b;
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+      color: var(--text);
+      background: radial-gradient(1200px 600px at 50% 30%, var(--bg2), var(--bg1));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: env(safe-area-inset-top) 16px env(safe-area-inset-bottom);
+      overflow:hidden;
+    }
+
+    .card{
+      width: min(520px, 92vw);
+      background: var(--card);
+      backdrop-filter: blur(10px);
+      border: 1px solid #ffffff80;
+      border-radius: 22px;
+      padding: 22px 18px;
+      text-align:center;
+      box-shadow: 0 20px 60px rgba(0,0,0,.12);
+    }
+
+    h1{
+      margin: 6px 0 8px;
+      font-size: clamp(22px, 5.6vw, 34px);
+      line-height: 1.2;
+    }
+
+    p{
+      margin: 0 0 18px;
+      opacity: .85;
+      font-size: clamp(14px, 3.8vw, 16px);
+    }
+
+    .play{
+      position: relative;
+      width: 100%;
+      height: min(52vh, 360px);
+      border-radius: 18px;
+      background: #ffffff90;
+      border: 1px solid #ffffffaa;
+      overflow: hidden;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .btn{
+      border: 0;
+      border-radius: 999px;
+      padding: 14px 22px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      user-select: none;
+      touch-action: manipulation;
+      box-shadow: 0 10px 22px rgba(0,0,0,.12);
+    }
+
+    #yes{
+      background: linear-gradient(135deg, var(--yes), var(--yes2));
+      color: white;
+      position: relative;
+      z-index: 2;
+      transform: translateX(-10px);
+    }
+
+    #no{
+      background: #fff;
+      color: var(--no);
+      border: 1px solid #00000014;
+      position: absolute;
+      left: 65%;
+      top: 62%;
+      transform: translate(-50%, -50%);
+      z-index: 3;
+      transition: left 220ms cubic-bezier(.2,.9,.2,1),
+                  top 220ms cubic-bezier(.2,.9,.2,1),
+                  transform 220ms cubic-bezier(.2,.9,.2,1);
+      will-change: left, top, transform;
+    }
+
+    .hint{
+      margin-top: 14px;
+      font-size: 13px;
+      opacity: .75;
+    }
+
+    .result{
+      font-size: clamp(22px, 5.4vw, 34px);
+      font-weight: 800;
+    }
+
+    .sub{
+      margin-top: 10px;
+      font-size: 16px;
+      opacity: .85;
+    }
+
+    @media (max-width: 360px){
+      .btn{ font-size: 16px; padding: 12px 18px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="card" id="card">
+    <h1>Will you be my Valentine? 💘</h1>
+    <p>Choose honestly… if you can 😌</p>
+
+    <section class="play" id="play">
+      <button class="btn" id="yes">Yes</button>
+      <button class="btn" id="no">No</button>
+    </section>
+
+    <div class="hint">Try pressing “No”… good luck 😭</div>
+  </main>
+
+  <script>
+    const play = document.getElementById('play');
+    const yesBtn = document.getElementById('yes');
+    const noBtn  = document.getElementById('no');
+    const card   = document.getElementById('card');
+
+    let dodges = 0;
+    const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
+
+    function moveNo(){
+      const p = play.getBoundingClientRect();
+      const b = noBtn.getBoundingClientRect();
+      const pad = 12;
+
+      const maxX = p.width - b.width - pad;
+      const maxY = p.height - b.height - pad;
+
+      let x, y;
+      x = Math.random() * maxX + pad / 2;
+      y = Math.random() * maxY + pad / 2;
+
+      noBtn.style.left = `${clamp(x, pad/2, maxX)}px`;
+      noBtn.style.top  = `${clamp(y, pad/2, maxY)}px`;
+      noBtn.style.transform = `scale(${1 + Math.min(dodges, 8) * 0.02})`;
+    }
+
+    const dodge = (e) => {
+      e.preventDefault();
+      dodges++;
+      moveNo();
+      yesBtn.style.transform =
+        `translateX(-10px) scale(${1 + Math.min(dodges, 10) * 0.06})`;
+    };
+
+    noBtn.addEventListener('pointerdown', dodge, { passive:false });
+    noBtn.addEventListener('pointerenter', dodge);
+    noBtn.addEventListener('touchstart', dodge, { passive:false });
+
+    yesBtn.addEventListener('click', () => {
+      card.innerHTML = `
+        <div class="result">Yay 💖</div>
+        <div class="sub">Too late now. Valentine accepted 😌</div>
+      `;
+    });
+
+    window.addEventListener('load', moveNo);
+    window.addEventListener('resize', moveNo);
+  </script>
+</body>
+</html>
