@@ -175,11 +175,10 @@
     noBtn.addEventListener('touchstart', dodge, { passive:false });
 
     yesBtn.addEventListener('click', () => {
-      card.innerHTML = `
-        <div class="result">Yay 💖</div>
-        <div class="sub">  😒ما كان من الاول طيب  </div>
-      `;
-    });
+  card.innerHTML =
+    '<div class="result">Yay 💖</div>' +
+    '<div class="sub">ما كان من الاول طيب 😒</div>';
+});
 
     window.addEventListener('load', moveNo);
     window.addEventListener('resize', moveNo);
